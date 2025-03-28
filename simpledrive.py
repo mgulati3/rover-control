@@ -3,8 +3,10 @@ import pigpio
 import os
 from time import sleep
 
-# Load API key from environment variables (do not hardcode it)
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# Load API key from environment variable (set OPENAI_API_KEY in your environment)
+openai.api_key = os.getenv("")
+if not openai.api_key:
+    raise ValueError("OpenAI API key not found. Please set the OPENAI_API_KEY environment variable.")
 
 # Initialize pigpio
 pi = pigpio.pi()
@@ -12,7 +14,6 @@ if not pi.connected:
     print("Error: Unable to connect to pigpio daemon. Make sure it is running!")
     exit(1)
 
-# OpenAI LLM  
 def get_command_from_llm(user_input):
     try:
         response = openai.ChatCompletion.create(
@@ -22,12 +23,12 @@ def get_command_from_llm(user_input):
                 {"role": "user", "content": user_input}
             ]
         )
-        return response.get('choices', [{}])[0].get('message', {}).get('content', "stop").strip().lower()
+        command = response.get('choices', [{}])[0].get('message', {}).get('content', "stop").strip().lower()
+        return command
     except Exception as e:
         print("Error communicating with OpenAI:", str(e))
         return "stop"
 
-# Rover control
 def control_rover(command, throttle=190):
     if "forward" in command:
         print("Moving forward")
@@ -49,8 +50,13 @@ def control_rover(command, throttle=190):
         pi.set_PWM_dutycycle(22, 0)
         pi.set_PWM_dutycycle(23, 0)
         pi.set_PWM_dutycycle(27, 0)
+    else:
+        print("Command not recognized. Stopping rover as a safety measure.")
+        pi.set_PWM_dutycycle(17, 0)
+        pi.set_PWM_dutycycle(22, 0)
+        pi.set_PWM_dutycycle(23, 0)
+        pi.set_PWM_dutycycle(27, 0)
 
-# Main loop with proper exception handling
 try:
     while True:
         user_input = input("Enter command: ")
@@ -60,7 +66,7 @@ try:
         sleep(0.5)
 except KeyboardInterrupt:
     print("\nStopping rover and cleaning up GPIO.")
-    control_rover("stop")  # Stop the rover before exiting
+    control_rover("stop")
 finally:
     print("Shutting down pigpio.")
-    pi.stop()  # Ensure cleanup
+    pi.stop()
