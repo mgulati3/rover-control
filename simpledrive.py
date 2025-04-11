@@ -9,8 +9,8 @@ load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
 openai.api_key = api_key
 
-# Define GPIO chip and pins (adjust chip if needed — check with `gpiodetect`)
-chip = gpiod.Chip('gpiochip4')  # Use 'gpiochip4' for Pi 5 RP1 controller
+# Define GPIO chip path and pins (check gpiochip with `gpiodetect`)
+chip = gpiod.Chip('/dev/gpiochip4')  # Use full path on Pi 5 RP1
 
 # Define pin mapping
 PIN_FORWARD_LEFT = 17
