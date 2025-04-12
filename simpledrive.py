@@ -7,7 +7,10 @@ from dotenv import load_dotenv
 # Load API key from .env
 load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
-openai.api_key = api_key
+
+# Initialize new OpenAI client (v1.x+)
+from openai import OpenAI
+client = OpenAI(api_key=api_key)
 
 # Define GPIO chip path and pins (check gpiochip with `gpiodetect`)
 chip = gpiod.Chip('/dev/gpiochip4')  # Use full path on Pi 5 RP1
@@ -39,14 +42,15 @@ def stop_all():
 
 def get_command_from_llm(user_input):
     try:
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "You are a rover control assistant."},
                 {"role": "user", "content": user_input}
             ]
         )
-        command = response.get('choices', [{}])[0].get('message', {}).get('content', "stop").strip().lower()
+        # Extract the response message content
+        command = response.choices[0].message.content.strip().lower()
         return command
     except Exception as e:
         print("Error communicating with OpenAI:", str(e))
