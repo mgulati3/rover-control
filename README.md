@@ -142,3 +142,7 @@ Open a terminal on your Raspberry Pi and follow these steps:
 ---
 
 Happy rover controlling!
+
+
+<img width="877" alt="Screenshot 2025-04-18 at 2 41 10 PM" src="https://github.com/user-attachments/assets/813dd465-23c0-41db-84c0-4493252cb67a" />
+
